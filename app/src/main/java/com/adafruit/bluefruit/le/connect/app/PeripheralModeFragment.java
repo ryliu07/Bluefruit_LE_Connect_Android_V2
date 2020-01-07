@@ -129,10 +129,10 @@ public class PeripheralModeFragment extends Fragment {
                         Fragment fragment = null;
                         String fragmentTag = null;
                         switch (index) {
-                            case 0:
-                                fragment = DeviceInformationServiceFragment.newInstance();
-                                fragmentTag = "DeviceInformationService";
-                                break;
+//                            case 0:
+//                                fragment = DeviceInformationServiceFragment.newInstance();
+//                                fragmentTag = "DeviceInformationService";
+//                                break;
                             case 1:
 
                                 fragment = UartServiceFragment.newInstance();

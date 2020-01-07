@@ -22,7 +22,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.adafruit.bluefruit.le.connect.R;
-import com.adafruit.bluefruit.le.connect.app.neopixel.NeopixelFragment;
+//import com.adafruit.bluefruit.le.connect.app.neopixel.NeopixelFragment;
 import com.adafruit.bluefruit.le.connect.ble.central.BlePeripheral;
 import com.adafruit.bluefruit.le.connect.ble.central.BlePeripheralBattery;
 import com.adafruit.bluefruit.le.connect.ble.central.BlePeripheralDfu;
@@ -205,48 +205,48 @@ public class PeripheralModulesFragment extends ConnectedPeripheralFragment {
         final String singlePeripheralIdentifier = mBlePeripheral != null ? mBlePeripheral.getIdentifier() : null;
 
         switch (moduleId) {
-            case MODULE_INFO:
-                if (singlePeripheralIdentifier != null) {
-                    fragment = InfoFragment.newInstance(singlePeripheralIdentifier);
-                }
-                break;
+//            case MODULE_INFO:
+//                if (singlePeripheralIdentifier != null) {
+//                    fragment = InfoFragment.newInstance(singlePeripheralIdentifier);
+//                }
+//                break;
 
             case MODULE_UART:
                 fragment = UartModeFragment.newInstance(singlePeripheralIdentifier);
                 break;
 
-            case MODULE_PLOTTER:
-                fragment = PlotterFragment.newInstance(singlePeripheralIdentifier);
-                break;
+//            case MODULE_PLOTTER:
+//                fragment = PlotterFragment.newInstance(singlePeripheralIdentifier);
+//                break;
 
-            case MODULE_PINIO:
-                if (singlePeripheralIdentifier != null) {
-                    fragment = PinIOFragment.newInstance(singlePeripheralIdentifier);
-                }
-                break;
+//            case MODULE_PINIO:
+//                if (singlePeripheralIdentifier != null) {
+//                    fragment = PinIOFragment.newInstance(singlePeripheralIdentifier);
+//                }
+//                break;
 
-            case MODULE_CONTROLLER:
-                if (singlePeripheralIdentifier != null) {
-                    fragment = ControllerFragment.newInstance(singlePeripheralIdentifier);
-                }
-                break;
+//            case MODULE_CONTROLLER:
+//                if (singlePeripheralIdentifier != null) {
+//                    fragment = ControllerFragment.newInstance(singlePeripheralIdentifier);
+//                }
+//                break;
 
-            case MODULE_NEOPIXEL:
-                if (singlePeripheralIdentifier != null) {
-                    fragment = NeopixelFragment.newInstance(singlePeripheralIdentifier);
-                }
-                break;
+//            case MODULE_NEOPIXEL:
+//                if (singlePeripheralIdentifier != null) {
+//                    fragment = NeopixelFragment.newInstance(singlePeripheralIdentifier);
+//                }
+//                break;
 
             case MODULE_CALIBRATION:
                 break;
 
-            case MODULE_THERMALCAMERA:
-                fragment = ThermalCameraFragment.newInstance(singlePeripheralIdentifier);
-                break;
+//            case MODULE_THERMALCAMERA:
+//                fragment = ThermalCameraFragment.newInstance(singlePeripheralIdentifier);
+//                break;
 
-            case MODULE_IMAGETRANSFER:
-                fragment = ImageTransferFragment.newInstance(singlePeripheralIdentifier);
-                break;
+//            case MODULE_IMAGETRANSFER:
+//                fragment = ImageTransferFragment.newInstance(singlePeripheralIdentifier);
+//                break;
 
             case MODULE_DFU:
                 if (singlePeripheralIdentifier != null) {

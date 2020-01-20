@@ -239,5 +239,46 @@ public class MainFragment extends Fragment {
         }
     }
 
+    int fallDetectAlg(int[][] angleArr){
+        //detect whether button is pressed
+        int buttonThres = 2;
+        int numberThreshold = buttonThres * 9;  //minimum rows of warning
+        int counter = 0;
+        int i =0;
+        double pitchAvg = 0.0;
+        double rollAvg = 0.0;
+        double yawAvg = 0.0;
+
+
+        for (i = (49-(buttonThres*10)); i < 50; i++){
+            if (angleArr[i][3]==1.0){
+                counter ++;
+            }
+
+        }
+        if(counter >= numberThreshold){
+
+            return 1;
+        }
+
+        //------fall detection--------------
+        for (i = 46; i < 50; i++){
+            yawAvg += angleArr[i][0];
+            pitchAvg += angleArr[i][1];
+            rollAvg += angleArr [i][2];
+
+        }
+        yawAvg /= 4;
+        pitchAvg /= 4;
+        rollAvg /= 4;
+
+        //assume take pitch and roll for fall detection
+        if((pitchAvg >= 45.0) || (rollAvg >= 45.0)){
+
+            return 2;
+        }
+        return 0;
+    }
+
     // endregion
 }

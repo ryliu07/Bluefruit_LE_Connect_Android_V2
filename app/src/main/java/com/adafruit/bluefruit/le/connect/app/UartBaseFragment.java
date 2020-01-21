@@ -117,6 +117,10 @@ public abstract class UartBaseFragment extends ConnectedPeripheralFragment imple
     private int maxPacketsToPaintAsText;
     private int mPacketsCacheLastSize = 0;
 
+    private int fallStatus = 0;
+    private int buttonTimeCounter = 0;
+    private final int[][] fallDetect = new int[4][3];
+
     // region Fragment Lifecycle
     public UartBaseFragment() {
         // Required empty public constructor
@@ -547,8 +551,7 @@ public abstract class UartBaseFragment extends ConnectedPeripheralFragment imple
 
     private void reloadData() {
         List<UartPacket> packetsCache = mUartData.getPacketsCache();
-        final int[][] fallDetect = new int[4][3];
-        int fallStatus = 0;
+        final String[] warning = new String[] {"Warning!"};
         final int packetsCacheSize = packetsCache.size();
         if (mPacketsCacheLastSize != packetsCacheSize) {        // Only if the buffer has changed
 
@@ -569,6 +572,12 @@ public abstract class UartBaseFragment extends ConnectedPeripheralFragment imple
                 for (int i = mPacketsCacheLastSize; i < packetsCacheSize; i++) {
                     final UartPacket packet = packetsCache.get(i);
 
+                    if (Arrays.equals(extractString(packet), warning)){
+                        buttonTimeCounter++;
+                    } else if (!Arrays.equals(extractString(packet), warning)){
+                        buttonTimeCounter = 0;
+                    }
+
                     for(int j = 0; j < 3; j++){
                         fallDetect[j] = fallDetect[j+1];
                     }
@@ -576,9 +585,9 @@ public abstract class UartBaseFragment extends ConnectedPeripheralFragment imple
                     fallStatus = fallDetectAlg(fallDetect);
                     if (fallStatus == 0) {
                          // No action
-                    }else if (fallStatus == 1){
+                    }else if (buttonTimeCounter >= 20){
                          // Call phone
-                    }else if (fallStatus == 2){
+                    }else if (fallStatus == 1){
                         // Send text message
                     }
 
@@ -624,17 +633,19 @@ public abstract class UartBaseFragment extends ConnectedPeripheralFragment imple
         return null;
     }
 
-//    private String[] extractString(UartPacket packet) {
-//        if (mIsEchoEnabled || packet.getMode() == UartPacket.TRANSFERMODE_RX) {
-//            final byte[] bytes = packet.getData();
-//            final String formattedData = mShowDataInHexFormat ? BleUtils.bytesToHex2(bytes) : BleUtils.bytesToText(bytes, true);
-//            if(!formattedData.equals("Warning!")){
-//                final String[] Strs = formattedData.split(";")[0].split(",");
-//                return Strs;
-//            }
-//        }
-//        return null;
-//    }
+    private String[] extractString(UartPacket packet) {
+        if (mIsEchoEnabled || packet.getMode() == UartPacket.TRANSFERMODE_RX) {
+            final byte[] bytes = packet.getData();
+            final String formattedData = mShowDataInHexFormat ? BleUtils.bytesToHex2(bytes) : BleUtils.bytesToText(bytes, true);
+            if(!formattedData.equals("Warning!")){
+                final String[] Strs = formattedData.split(";")[0].split(",");
+                return Strs;
+            } else if (formattedData.equals("Warning!")){
+                return new String[]{"Warning!"};
+            }
+        }
+        return null;
+    }
 
     private static SpannableString stringFromPacket(UartPacket packet, boolean useHexMode, int color, boolean isBold) {
         final byte[] bytes = packet.getData();
@@ -903,7 +914,7 @@ public abstract class UartBaseFragment extends ConnectedPeripheralFragment imple
 
 
     private int fallDetectAlg(int[][] angleArr){
-        //detect whether button is pressed
+//        detect whether button is pressed
 //        int buttonThres = 2;
 //        int numberThreshold = buttonThres * 9;  //minimum rows of warning
 //        int counter = 0;
@@ -919,23 +930,20 @@ public abstract class UartBaseFragment extends ConnectedPeripheralFragment imple
 //            if (angleArr[i][3]==1.0){
 //                counter ++;
 //            }
-//
 //        }
 //        if(counter >= numberThreshold){
-//
 //            return 1;
 //        }
 
-        if (Arrays.equals(angleArr[3], warning)){
-            return 1;
-        }
+//        if (Arrays.equals(angleArr[3], warning)){
+//            return 1;
+//        }
 
         //------fall detection--------------
         for (i = 0; i < 4; i++){
             yawAvg += angleArr[i][0];
             pitchAvg += angleArr[i][1];
             rollAvg += angleArr [i][2];
-
         }
         yawAvg /= 4;
         pitchAvg /= 4;
@@ -944,7 +952,7 @@ public abstract class UartBaseFragment extends ConnectedPeripheralFragment imple
         //assume take pitch and roll for fall detection
         if((pitchAvg >= 45.0) || (rollAvg >= 45.0)){
 
-            return 2;
+            return 1;
         }
         return 0;
     }

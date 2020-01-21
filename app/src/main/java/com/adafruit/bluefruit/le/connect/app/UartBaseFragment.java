@@ -51,6 +51,7 @@ import com.adafruit.bluefruit.le.connect.utils.KeyboardUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -546,6 +547,8 @@ public abstract class UartBaseFragment extends ConnectedPeripheralFragment imple
 
     private void reloadData() {
         List<UartPacket> packetsCache = mUartData.getPacketsCache();
+        final int[][] fallDetect = new int[4][3];
+        int fallStatus = 0;
         final int packetsCacheSize = packetsCache.size();
         if (mPacketsCacheLastSize != packetsCacheSize) {        // Only if the buffer has changed
 
@@ -565,6 +568,20 @@ public abstract class UartBaseFragment extends ConnectedPeripheralFragment imple
                 // Log.d(TAG, "update packets: "+(bufferSize-mPacketsCacheLastSize));
                 for (int i = mPacketsCacheLastSize; i < packetsCacheSize; i++) {
                     final UartPacket packet = packetsCache.get(i);
+
+                    for(int j = 0; j < 3; j++){
+                        fallDetect[j] = fallDetect[j+1];
+                    }
+                    fallDetect[3] = extractInt(packet);
+                    fallStatus = fallDetectAlg(fallDetect);
+                    if (fallStatus == 0) {
+                         // No action
+                    }else if (fallStatus == 1){
+                         // Call phone
+                    }else if (fallStatus == 2){
+                        // Send text message
+                    }
+
                     onUartPacketText(packet);
                 }
 
@@ -584,10 +601,40 @@ public abstract class UartBaseFragment extends ConnectedPeripheralFragment imple
             final int color = colorForPacket(packet);
             final boolean isBold = isFontBoldForPacket(packet);
             final byte[] bytes = packet.getData();
-            final String formattedData = mShowDataInHexFormat ? BleUtils.bytesToHex2(bytes) : BleUtils.bytesToText(bytes, true);
+            final String formattedData = mShowDataInHexFormat ? BleUtils.bytesToHex2(bytes) : BleUtils.bytesToText(bytes, true); // Arrays.toString(extractInt(packet)); // Integer.toString(extractString(packet).length); //  // Arrays.toString(extractString(packet)); //
             addTextToSpanBuffer(mTextSpanBuffer, formattedData, color, isBold);
         }
     }
+
+    private int[] extractInt(UartPacket packet) {
+        if (mIsEchoEnabled || packet.getMode() == UartPacket.TRANSFERMODE_RX) {
+            final byte[] bytes = packet.getData();
+            final String formattedData = mShowDataInHexFormat ? BleUtils.bytesToHex2(bytes) : BleUtils.bytesToText(bytes, true);
+            final int[] threeDigit = new int[3];
+            if(!formattedData.equals("Warning!")){
+                final String[] Strs = formattedData.split(";")[0].split(",");
+                for(int i = 0; i < Strs.length; i++){
+                    threeDigit[i] = Integer.parseInt(Strs[i].trim());
+                }
+                return threeDigit;
+            } else if (formattedData.equals("Warning!")){
+                return new int[]{999,999,999};
+            }
+        }
+        return null;
+    }
+
+//    private String[] extractString(UartPacket packet) {
+//        if (mIsEchoEnabled || packet.getMode() == UartPacket.TRANSFERMODE_RX) {
+//            final byte[] bytes = packet.getData();
+//            final String formattedData = mShowDataInHexFormat ? BleUtils.bytesToHex2(bytes) : BleUtils.bytesToText(bytes, true);
+//            if(!formattedData.equals("Warning!")){
+//                final String[] Strs = formattedData.split(";")[0].split(",");
+//                return Strs;
+//            }
+//        }
+//        return null;
+//    }
 
     private static SpannableString stringFromPacket(UartPacket packet, boolean useHexMode, int color, boolean isBold) {
         final byte[] bytes = packet.getData();
@@ -852,6 +899,54 @@ public abstract class UartBaseFragment extends ConnectedPeripheralFragment imple
 
             return mTableCachedDataBuffer.size();
         }
+    }
+
+
+    private int fallDetectAlg(int[][] angleArr){
+        //detect whether button is pressed
+//        int buttonThres = 2;
+//        int numberThreshold = buttonThres * 9;  //minimum rows of warning
+//        int counter = 0;
+        int i = 0;
+        int j = 0;
+        double pitchAvg = 0.0;
+        double rollAvg = 0.0;
+        double yawAvg = 0.0;
+        int[] warning = new int[]{999,999,999};
+
+
+//        for (i = (49-(buttonThres*10)); i < 50; i++){
+//            if (angleArr[i][3]==1.0){
+//                counter ++;
+//            }
+//
+//        }
+//        if(counter >= numberThreshold){
+//
+//            return 1;
+//        }
+
+        if (Arrays.equals(angleArr[3], warning)){
+            return 1;
+        }
+
+        //------fall detection--------------
+        for (i = 0; i < 4; i++){
+            yawAvg += angleArr[i][0];
+            pitchAvg += angleArr[i][1];
+            rollAvg += angleArr [i][2];
+
+        }
+        yawAvg /= 4;
+        pitchAvg /= 4;
+        rollAvg /= 4;
+
+        //assume take pitch and roll for fall detection
+        if((pitchAvg >= 45.0) || (rollAvg >= 45.0)){
+
+            return 2;
+        }
+        return 0;
     }
 
     // endregion
